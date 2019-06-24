@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Friends</title>
+	{% load staticfiles %}
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<!-- style -->
+	<link rel="stylesheet" type="text/css" href="{% static 'friends_app/css/index.css' %}">
+</head>
+<body>
+	<div class="container">
+		<a href="{% url 'friends:home' %}">
+			<button class='btn btn-default pull-right'>Dashboard</button>
+		</a>
+		<a href="{% url 'login_reg:logout' %}">
+			<button class='btn btn-default pull-right'>Logout</button>
+		</a>
+
+		<h2>{{user.alias}}'s Profile</h2>
+		<p><b>Name:</b> {{user.name}}</p>
+		<p><b>Email:</b> {{user.email}}</p>
+	</div> <!-- end of container -->
+</body>
+</html>

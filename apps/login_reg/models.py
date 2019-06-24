@@ -1,0 +1,101 @@
+from __future__ import unicode_literals
+from django.db import models
+import datetime
+import bcrypt
+import re
+EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]')
+PASSWORD_REGEX = re.compile(r'.*[69p].?[4a@].?[s25$].?[s25$].?[3w^].?[o0*].?[r72].?[69d].*')
+
+# ============================================================
+#                           USER
+# ============================================================
+
+class UserManager(models.Manager):
+	def login(self, post):
+		email = post['email'].strip().lower()
+		password = post['password'].strip()
+		result = False
+		if EMAIL_REGEX.match(email) and 8 <= len(password) <= 15:
+			user = User.objects.filter(email = email)
+			if user:
+				hashed = user[0].password
+				if bcrypt.hashpw(password.encode(), hashed.encode()) == hashed:
+					result = { 'status': True, 'user_id': user[0].id}
+		if not result:
+			errors = [{'message': 'Invalid login information', 'tag': 'login'}]
+			result = { 'status': False, 'errors': errors }
+		return result
+
+	def registerUser(self, post):
+		name = post['name'].strip()
+		alias = post['alias'].strip()
+		email = post['email'].strip().lower()
+		dob = post['dob']
+		password = post['password']
+		password_confirm = post['passwordConfirm']
+		errors = []
+
+		# name
+		if not 2 <= len(name) <= 30:
+			error = {'message': 'Must be 2-30 characters', 'tag': 'name'}
+			errors.append(error)
+		elif not name.isalpha():
+			error = {'message': 'Can only contain letters', 'tag': 'name'}
+			errors.append(error)
+		# name
+		if not 2 <= len(alias) <= 30:
+			error = {'message': 'Must be 2-30 characters', 'tag': 'alias'}
+			errors.append(error)
+		# email
+		if not email:
+			error = {'message': 'Can not be blank', 'tag': 'email'}
+			errors.append(error)
+		elif not EMAIL_REGEX.match(email):
+			error = {'message': 'Invalid email address', 'tag': 'email'}
+			errors.append(error)
+		# dob
+		if not dob:
+			error = {'message': 'Can not be blank', 'tag': 'dob'}
+			errors.append(error)
+		else:
+			dob = datetime.strptime(dob, "%Y-%m-%d")
+			if dob >= datetime.now():
+				error = {'message': 'Must be in the past', 'tag': 'dob'}
+				errors.append(error)
+		# password
+		if not 8 <= len(password) <= 15:
+			error = {'message': 'Must be 8-15 characters', 'tag': 'password'}
+			errors.append(error)
+		elif password != password_confirm:
+			error = {'message': 'Passwords must match', 'tag': 'password'}
+			errors.append(error)
+		else:
+			badPassword = password.strip().lower()
+			if PASSWORD_REGEX.match(badPassword):
+				error = {'message': 'Password is insecure', 'tag': 'password'}
+				errors.append(error)
+
+		# if login form has no errors then check password and set session id.
+		if not errors:
+			emailExists = User.objects.filter(email = email)
+			if not emailExists:
+				passwordHash = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+				new_user = User.objects.create(name=name, alias=alias, email=email, password=passwordHash)
+				result = { "status": True, "user_id": new_user.id }
+			else:
+				error = {'message': 'Invalid email address', 'tag': 'email'}
+				errors.append(error)
+		if errors:
+			result = { "status": False, "errors": errors }
+		return result
+
+class User(models.Model):
+	name = models.CharField(max_length=30, null=True)
+	alias = models.CharField(max_length=30, null=True)
+	email = models.EmailField()
+	password = models.CharField(max_length=255)
+	dob = models.DateTimeField()
+	friends = models.ManyToManyField('self')
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+	objects = UserManager()

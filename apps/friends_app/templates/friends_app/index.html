@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Friends</title>
+	{% load staticfiles %}
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<!-- style -->
+	<link rel="stylesheet" type="text/css" href="{% static 'friends_app/css/index.css' %}">
+</head>
+<body>
+	<div class="container">
+		<a href="{% url 'login_reg:logout' %}">
+			<button class='btn btn-default pull-right'>Logout</button>
+		</a>
+		<h2 class='text-center'>Welcome {{user.name}}</h2>
+
+		<h4>Here is the list of your friends:</h4>
+		<table  class="table table-striped">
+			<tr><th>Alias</th><th>Actions</th></tr>
+			{% for friend in user.friends.all %}
+				<tr>
+					<td>{{ friend.alias }}</td>
+					<td>
+						<a href="{% url 'friends:view_profile' id=friend.id %}" class='btn btn-default'>View Profile</a>
+						<a href="{% url 'friends:remove_friend' id=friend.id %}" class='btn btn-default'>Remove as Friend</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</table>
+
+		<h4>Other Users not in your friend's list:</h4>
+		<table  class="table table-striped">
+			<tr><th>Alias</th><th>Actions</th></tr>
+			{% for user in other_users %}
+				<tr>
+					<td><a href="{% url 'friends:view_profile' id=user.id %}">{{ user.alias }}</a></td>
+					<td><a href="{% url 'friends:add_friend' id=user.id %}" class='btn btn-default'>Add as Friend</a></td>
+				</tr>
+			{% endfor %}
+		</table>
+	</div> <!-- end of container -->
+</body>
+</html>
